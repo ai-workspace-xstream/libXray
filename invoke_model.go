@@ -18,6 +18,8 @@ const (
 	LibXrayMethodStopXray                    LibXrayMethod = "stopXray"
 	LibXrayMethodXrayVersion                 LibXrayMethod = "xrayVersion"
 	LibXrayMethodGetXrayState                LibXrayMethod = "getXrayState"
+	LibXrayMethodConfigureTelemetry          LibXrayMethod = "configureTelemetry"
+	LibXrayMethodShutdownTelemetry           LibXrayMethod = "shutdownTelemetry"
 )
 
 type LibXrayInvokeRequest struct {
@@ -98,4 +100,13 @@ type XrayVersionResponse struct {
 
 type GetXrayStateResponse struct {
 	Running bool `json:"running"`
+}
+
+// ConfigureTelemetryRequest carries an explicitly authorized, short-lived
+// ingest token in memory. It must never be persisted or logged by the caller.
+type ConfigureTelemetryRequest struct {
+	Enabled        bool   `json:"enabled"`
+	Endpoint       string `json:"endpoint,omitempty"`
+	IngestToken    string `json:"ingestToken,omitempty"`
+	ServiceVersion string `json:"serviceVersion,omitempty"`
 }

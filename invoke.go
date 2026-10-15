@@ -8,6 +8,7 @@ import (
 	"github.com/xtls/libxray/geo"
 	"github.com/xtls/libxray/nodep"
 	"github.com/xtls/libxray/share"
+	"github.com/xtls/libxray/telemetry"
 	"github.com/xtls/libxray/xray"
 )
 
@@ -59,9 +60,24 @@ func Invoke(requestJSON string) string {
 		return encodeInvokeResponse(&XrayVersionResponse{Version: xray.XrayVersion()}, nil)
 	case LibXrayMethodGetXrayState:
 		return encodeInvokeResponse(&GetXrayStateResponse{Running: xray.GetXrayState()}, nil)
+	case LibXrayMethodConfigureTelemetry:
+		return invokeConfigureTelemetry(request.Payload)
+	case LibXrayMethodShutdownTelemetry:
+		return encodeInvokeNoDataResponse(telemetry.Shutdown(nil))
 	default:
 		return encodeInvokeResponse(nil, errors.New("unknown method"))
 	}
+}
+
+func invokeConfigureTelemetry(payload json.RawMessage) string {
+	request, err := decodePayload[ConfigureTelemetryRequest](payload)
+	if err != nil {
+		return encodeInvokeNoDataResponse(err)
+	}
+	if !request.Enabled {
+		return encodeInvokeNoDataResponse(telemetry.Shutdown(nil))
+	}
+	return encodeInvokeNoDataResponse(telemetry.Configure(request.Endpoint, request.IngestToken, request.ServiceVersion))
 }
 func validateAPIVersion(version int) error {
 	if version == 0 || version == 1 {
